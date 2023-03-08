@@ -17,7 +17,7 @@ public class Client{
         Socket socket = new Socket(server, port);
         Scanner scanner = new Scanner(System.in);
 
-        System.out.println("Entrez votre message > ");
+        System.out.println("Choose a username > ");
 
 
         while (scanner.hasNextLine()) {
