@@ -5,7 +5,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class Server {
-   // Serveur avec pool "voleur"
    public static void main(String[] args) throws IOException {
        int port = 1234;
        ExecutorService threadPool = Executors.newWorkStealingPool();
