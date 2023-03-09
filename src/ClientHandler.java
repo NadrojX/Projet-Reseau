@@ -27,10 +27,11 @@ public class ClientHandler extends Thread {
             while ((line = in.readLine()) != null) {
 
                 System.out.printf(
-                        " Publish: @ %s",
+                        " Sent from the client: %s\n",
                         line);
+                String username = line;
 
-                out.println(line);
+                out.println("@" + line);
             }
         } catch (IOException e) {
             e.printStackTrace();
