@@ -5,15 +5,17 @@ import java.io.PrintWriter;
 import java.net.Socket;
 
 public class ClientHandler extends Thread {
-    private final Socket socket;
+    private Socket socket;
+    private Server server;
+    private PrintWriter out;
+    private BufferedReader in;
 
     public ClientHandler(Socket socket) {
         this.socket = socket;
     }
 
     public void run() {
-        PrintWriter out = null;
-        BufferedReader in = null;
+
         try {
 
             out = new PrintWriter(
@@ -23,15 +25,23 @@ public class ClientHandler extends Thread {
                     new InputStreamReader(
                             socket.getInputStream()));
 
-            String line;
-            while ((line = in.readLine()) != null) {
+            String username = in.readLine();
+            System.out.println(username + " is connected");
+
+            String inputLine;
+            while ((inputLine   = in.readLine()) != null) {
+                if (inputLine.equals("exit")) {
+                    break;
+                }
 
                 System.out.printf(
-                        " Sent from the client: %s\n",
-                        line);
-                String username = line;
-
-                out.println("@" + line);
+                        " PUBLISH author:@%s",
+                        username+ "\n" );
+                System.out.printf(
+                        "----------------------- \n");
+                System.out.printf(
+                        inputLine + "\n");
+                out.println("@" + inputLine);
             }
         } catch (IOException e) {
             e.printStackTrace();

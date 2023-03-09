@@ -18,6 +18,7 @@ public class Client{
         Scanner scanner = new Scanner(System.in);
 
         System.out.println("Choose a username > ");
+        System.out.println("Choose your request");
 
 
         while (scanner.hasNextLine()) {
