@@ -5,7 +5,6 @@ import java.net.Socket;
 
 public class ClientHandler extends Thread{
     private final Socket socket;
-    private static String username;
 
     public ClientHandler(Socket socket) {
         this.socket = socket;
@@ -13,24 +12,27 @@ public class ClientHandler extends Thread{
 
     public void run() {
         try (BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
              PrintWriter out = new PrintWriter(socket.getOutputStream(), true)) {
 
             while (true) {
-                String message = in.readLine();
-                System.out.println("PUBLISH author:" + username);
-                System.out.println("--------------------");
-                System.out.println(message);
+                String request = in.readLine();
+                String[] requestParts = request.split(" ");
 
-                out.println("@" + message + "\n");
+                switch (requestParts[0]) {
+                    case "PUBLISH":
+                        if(requestParts.length < 3) {
+                            out.println("ERROR");
+                        } else {
+                            out.println("OK");
+                        }
+                        break;
+                }
             }
 
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    public static void setUsername(String username){
-        ClientHandler.username = username;
     }
 
 }
