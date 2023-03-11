@@ -5,17 +5,16 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class Server {
+
     public static void main(String[] args) throws IOException {
-        int port = 1234;
-        ExecutorService threadPool = Executors.newWorkStealingPool();
+        ExecutorService executorService = Executors.newFixedThreadPool(3);
+        ServerSocket serverSocket = new ServerSocket(12345);
 
-        ServerSocket serverSocket = new ServerSocket(port);
-
-        Socket socket = null;
-        while (true) {
-            socket = serverSocket.accept();
+        while (true){
+            Socket socket = serverSocket.accept();
             ClientHandler clientHandler = new ClientHandler(socket);
-            threadPool.submit(clientHandler);
+            executorService.submit(clientHandler);
         }
     }
+
 }

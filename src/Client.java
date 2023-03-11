@@ -1,30 +1,25 @@
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.net.*;
+import java.io.*;
+import java.net.Socket;
 import java.util.Scanner;
 
-public class Client{
+public class Client {
 
     public static void main(String[] args) throws IOException {
-        if(args.length < 2){
-            System.out.println("Entrez le serveur et le port!");
-            return;
-        }
+        Socket socket = new Socket("localhost", 12345);
+        System.out.print("Enter Username: ");
 
-        String server = args[0];
-        int port = Integer.parseInt(args[1]);
-
-        Socket socket = new Socket(server, port);
         Scanner scanner = new Scanner(System.in);
+        String username = scanner.nextLine();
+        ClientHandler.setUsername(username);
 
-        System.out.println("Choose a username > ");
-        System.out.println("Choose your request");
+        PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
 
-
-        while (scanner.hasNextLine()) {
-            String input = scanner.nextLine() + "\n";
-            DataOutputStream output = new DataOutputStream(socket.getOutputStream());
-            output.writeUTF(input);
+        while (scanner.hasNextLine()){
+            String message = scanner.nextLine();
+            out.println(message);
+            DataInputStream in = new DataInputStream(socket.getInputStream());
+            System.out.println(in.readLine());
         }
+
     }
 }
