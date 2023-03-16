@@ -16,19 +16,24 @@ public class ClientHandler extends Thread{
              PrintWriter out = new PrintWriter(socket.getOutputStream(), true)) {
 
             while (true) {
+
                 String request = in.readLine();
-                String[] requestLines = request.split("\\\\r\\\\n");
+                String[] requestLines = request.split("\\\\r\\\\n| ");
+
                 String header = requestLines[0];
-                if (header.startsWith("PUBLISH")) {
+                String author = requestLines[1];
+
+                if (header.equals("PUBLISH")) {
                     System.out.println(header);
-                    if(requestLines.length >= 2) {
-                        String corps = requestLines[1];
+                    if(requestLines.length >= 3) {
+                        String corps = requestLines[2];
                         System.out.println(corps);
                         out.println("OK\\\\r\\\\n\\\\r\\\\n");
                     } else {
                         out.println("ERROR\\\\r\\\\nThere is an error\\\\r\\\\n");
                     }
                 }
+
             }
 
         } catch (Exception e) {
