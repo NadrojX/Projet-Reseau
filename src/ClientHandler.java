@@ -16,7 +16,6 @@ public class ClientHandler extends Thread{
              PrintWriter out = new PrintWriter(socket.getOutputStream(), true)) {
 
             while (true) {
-
                 String request = in.readLine();
                 String[] requestLines = request.split("\\\\r\\\\n| ");
 
@@ -25,15 +24,15 @@ public class ClientHandler extends Thread{
 
                 if (header.equals("PUBLISH")) {
                     System.out.println(header);
-                    if(requestLines.length >= 3) {
-                        String corps = requestLines[2];
-                        System.out.println(corps);
-                        out.println("OK\\\\r\\\\n\\\\r\\\\n");
+                    if(requestLines.length >= 3 && requestLines.length <= 259) {
+                        for (int i = 2; i < requestLines.length; i++) {
+                            System.out.print(requestLines[i] + " ");
+                        }
+                        out.println("OK\r\n\r\n");
                     } else {
-                        out.println("ERROR\\\\r\\\\nThere is an error\\\\r\\\\n");
+                        out.println("ERROR\\r\\nThere is an error your message need to make 256 characters maximum.\\r\\n");
                     }
                 }
-
             }
 
         } catch (Exception e) {
