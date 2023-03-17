@@ -3,16 +3,17 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map;
 
 public class ClientHandler extends Thread{
     private final Socket socket;
-    private final HashMap<String, Long> messagesID = new HashMap<>();
-    private final HashMap<String, String> messagesAuthor = new HashMap<>();
-    private final HashMap<Long, String> messagesKeyWorld = new HashMap<>();
+    private final static HashMap<Long, String> messagesID = new HashMap<>();
+    private final static HashMap<String, String> messagesAuthor = new HashMap<>();
+    private final static HashMap<Long, String> messagesKeyWorld = new HashMap<>();
+    private final static ArrayList<String> keyWorld = new ArrayList<>();
 
-    private long id = 0;
+    private static long id = 1;
 
     public ClientHandler(Socket socket) {
         this.socket = socket;
@@ -26,13 +27,12 @@ public class ClientHandler extends Thread{
             while (true) {
                 String request = in.readLine();
                 String[] requestLines = request.split("\\\\r\\\\n| ");
-                ArrayList<String> keyWorld = new ArrayList<>();
 
                 String header = requestLines[0];
-                String author = requestLines[1];
-                StringBuilder message = new StringBuilder();
 
                 if (header.equals("PUBLISH")) {
+                    String author = requestLines[1];
+                    StringBuilder message = new StringBuilder();
                     if(requestLines.length >= 3 && requestLines.length <= 259) {
                         for (int i = 2; i < requestLines.length; i++) {
                             if (requestLines[i].startsWith("#")) {
@@ -40,18 +40,32 @@ public class ClientHandler extends Thread{
                             }
                             message.append(requestLines[i]).append(" ");
                         }
-                        messagesID.put(message.toString(), updateId());
+                        messagesID.put(getId(), message.toString());
                         messagesAuthor.put(message.toString(), author);
                         for (String s : keyWorld) {
-                            messagesKeyWorld.put(messagesID.get(message.toString()), s);
+                            messagesKeyWorld.put(getId(), s);
                         }
+                        updateId();
                         out.println("OK\r\n\r\n");
                     } else {
                         out.println("ERROR\\r\\nThere is an error your message need to make 256 characters maximum.\\r\\n");
                     }
                 }
 
+                if(header.equals("RCV_IDS")){
 
+                }
+
+                if(header.equals("RCV_MSG")){
+                    requestLines = request.split("\\\\r\\\\n| |:");
+                    long id = Long.parseLong(requestLines[2]);
+                    if(messagesID.containsKey(id)) {
+                       String message = messagesID.get(id);
+                       out.println("MSG\\r\\n" + message);
+                    } else {
+                        out.println("ERROR\\r\\nThere is no message with this id.\\r\\n");
+                    }
+                }
 
             }
 
@@ -60,8 +74,12 @@ public class ClientHandler extends Thread{
         }
     }
 
-    private synchronized long updateId() {
-        return id++;
+    private synchronized void updateId() {
+        id++;
+    }
+
+    public synchronized long getId() {
+        return id;
     }
 
 }

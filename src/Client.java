@@ -26,6 +26,10 @@ public class Client {
                 String errorMessage = responseLines[1];
                 System.out.println(errorMessage);
                 socket.close();
+            } else if (header.equals("MSG")) {
+                String message = responseLines[1];
+                System.out.println(message);
+                socket.close();
             }
 
         }
