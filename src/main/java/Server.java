@@ -1,3 +1,5 @@
+import Database.Database;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -9,9 +11,12 @@ public class Server {
     public static void main(String[] args) throws IOException {
         ExecutorService executorService = Executors.newFixedThreadPool(5);
         ServerSocket serverSocket = new ServerSocket(12345);
-        while (true){
+        Database database = new Database("src/main/resources/database.db");
+        database.connect();
+        database.init();
+        while (true) {
             Socket socket = serverSocket.accept();
-            ClientHandler clientHandler = new ClientHandler(socket);
+            ClientHandler clientHandler = new ClientHandler(socket, database);
             executorService.submit(clientHandler);
         }
     }

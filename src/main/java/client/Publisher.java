@@ -1,3 +1,5 @@
+package client;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -22,7 +24,7 @@ public class Publisher {
         BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
         String message = scanner.nextLine();
-        out.println("PUBLISH "+ pseudo + "\\r\\n" + message + "\\r\\n");
+        out.println("PUBLISH " + pseudo + "\\r\\n" + message + "\\r\\n");
 
         String response = in.readLine();
         String[] messageLines = response.split("\\\\r\\\\n| ");

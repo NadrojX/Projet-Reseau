@@ -1,14 +1,21 @@
+import Database.Database;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-public class ClientHandler implements Runnable{
+import java.sql.SQLException;
 
+public class ClientHandler implements Runnable {
     private final Socket socket;
+    private final Database database;
 
-    public ClientHandler(Socket socket) {
+    private static final int MAX_MESSAGE_SIZE = 256;
+
+    public ClientHandler(Socket socket, Database database) {
         this.socket = socket;
+        this.database = database;
     }
 
     @Override
@@ -24,29 +31,88 @@ public class ClientHandler implements Runnable{
                 case "PUBLISH" -> {
                     String author = messageLines[1].split(":")[1];
                     int contentMessageSize = (message.length() - (messageLines[0].length() + messageLines[1].length() + 9));
-                    if (contentMessageSize > 256) {
+                    if (contentMessageSize > MAX_MESSAGE_SIZE) {
                         out.println("ERROR\\r\\nMessage too long\\r\\n");
                         return;
                     }
                     StringBuilder completeMessage = new StringBuilder();
+                    StringBuilder tags = new StringBuilder();
                     for (int i = 2; i < messageLines.length; i++) {
                         completeMessage.append(messageLines[i]).append(" ");
+                        if (messageLines[i].startsWith("#")) {
+                            tags.append(messageLines[i]).append(",");
+                        }
                     }
+                    database.executeStatement("INSERT INTO messages (id, author, content, tags, replyTo, republished) VALUES (" + database.setMessageId() + ", '" + author + "', '" + completeMessage + "', '" + tags + "', 0, 0)");
                     System.out.println(author + " " + completeMessage);
                     out.println("OK\\r\\n\\r\\n");
                 }
-                case "RCV_IDS" -> out.println("OK\\r\\n\\r\\n");
+                case "RCV_IDS" -> {
+                    String user = null;
+                    String tag = null;
+                    long id = -1;
+                    int n = 5;
+
+                    for (int i = 1; i < messageLines.length; i++) {
+                        if (messageLines[i].startsWith("author:")) {
+                            user = messageLines[i].split(":")[1];
+                        } else if (messageLines[i].startsWith("tag:")) {
+                            tag = messageLines[i].split(":")[1];
+                        } else if (messageLines[i].startsWith("since_id:")) {
+                            id = Long.parseLong(messageLines[i].split(":")[1]);
+                        } else if (messageLines[i].startsWith("limit:")) {
+                            n = Integer.parseInt(messageLines[i].split(":")[1]);
+                        }
+                    }
+
+                    if (user == null && tag == null && id == -1) {
+                        out.println("MSG_IDS\\r\\n" + database.getLastMessageId(n) + "\\r\\n");
+                    }
+                    if (user != null && tag == null && id == -1) {
+                        out.println("MSG_IDS\\r\\n" + database.getLastMessageOfUser(n, user) + "\\r\\n");
+                    }
+                    if (user == null && tag != null && id == -1) {
+                        out.println("MSG_IDS\\r\\n" + database.getLastMessageOfTag(n, tag) + "\\r\\n");
+                    }
+                    if (user == null && tag == null && id != -1) {
+                        out.println("MSG_IDS\\r\\n" + database.getLastMessageIdSince(n, id) + "\\r\\n");
+                    }
+                    if (user != null && tag != null && id == -1) {
+                        out.println("MSG_IDS\\r\\n" + database.getLastMessageOfUserAndTag(n, user, tag) + "\\r\\n");
+                    }
+                    if (user != null && tag == null && id != -1) {
+                        out.println("MSG_IDS\\r\\n" + database.getLastMessageOfUserSince(n, user, id) + "\\r\\n");
+                    }
+                    if (user == null && tag != null && id != -1) {
+                        out.println("MSG_IDS\\r\\n" + database.getLastMessageOfTagSince(n, tag, id) + "\\r\\n");
+                    }
+                    if (user != null && tag != null && id != -1) {
+                        out.println("MSG_IDS\\r\\n" + database.getLastMessageOfUserAndTagSince(n, user, tag, id) + "\\r\\n");
+                    }
+
+                }
                 case "RCV_MSG" -> {
+                    if (!messageLines[1].split(":")[0].equals("msg_id")) {
+                        out.println("ERROR\\r\\nBad request format. The good format is : RCV_MSG msg_id:id\\r\\n");
+                        return;
+                    }
                     int messageId = Integer.parseInt(messageLines[1].split(":")[1]);
-                    out.println("Error\\r\\nMessage id not exist\\r\\n");
+                    if (database.messageIdExist(messageId)) {
+                        if (database.getReplyTo(messageId) == null) {
+                            out.println("MSG " + database.getAuthor(messageId) + " [republished:" + database.getRepublished(messageId) + "]" + "\\r\\n" + database.getMessage(messageId) + "\\r\\n");
+                        } else {
+                            out.println("MSG " + database.getAuthor(messageId) + " [reply_to_id:" + database.getReplyTo(messageId) + "] [republished:" + database.getRepublished(messageId) + "]" + "\\r\\n" + database.getMessage(messageId) + "\\r\\n");
+                        }
+                    } else {
+                        out.println("ERROR\\r\\nMessage id not exist\\r\\n");
+                    }
                 }
                 default -> out.println("ERROR\\r\\nUnknown command\\r\\n");
             }
 
-        } catch (IOException e) {
+        } catch (IOException | SQLException e) {
             e.printStackTrace();
         }
     }
-
 
 }
