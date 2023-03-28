@@ -150,4 +150,9 @@ public class Database {
         return stringBuilder.toString();
     }
 
+    public String getTags(int id) throws SQLException {
+        ResultSet resultSet = statement.executeQuery("SELECT tags FROM messages WHERE id = " + id);
+        return resultSet.getString("tags");
+    }
+
 }

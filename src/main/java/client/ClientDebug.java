@@ -16,7 +16,7 @@ public class ClientDebug {
         PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
         BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-        while (true) {
+        while (scanner.hasNext()) {
             String message = scanner.nextLine();
             out.println(message);
 

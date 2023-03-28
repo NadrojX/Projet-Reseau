@@ -43,7 +43,7 @@ public class ClientHandler implements Runnable {
                             tags.append(messageLines[i]).append(",");
                         }
                     }
-                    database.executeStatement("INSERT INTO messages (id, author, content, tags, replyTo, republished) VALUES (" + database.setMessageId() + ", '" + author + "', '" + completeMessage + "', '" + tags + "', 0, 0)");
+                    database.executeStatement("INSERT INTO messages (id, author, content, tags, replyTo, republished) VALUES (" + database.setMessageId() + ", '" + author + "', '" + completeMessage + "', '" + tags + "', NULL, 0)");
                     System.out.println(author + " " + completeMessage);
                     out.println("OK\\r\\n\\r\\n");
                 }
@@ -103,6 +103,56 @@ public class ClientHandler implements Runnable {
                         } else {
                             out.println("MSG " + database.getAuthor(messageId) + " [reply_to_id:" + database.getReplyTo(messageId) + "] [republished:" + database.getRepublished(messageId) + "]" + "\\r\\n" + database.getMessage(messageId) + "\\r\\n");
                         }
+                    } else {
+                        out.println("ERROR\\r\\nMessage id not exist\\r\\n");
+                    }
+                }
+                case "REPUBLISH" -> {
+                    if(messageLines.length < 3){
+                        out.println("ERROR\\r\\nBad request format. The good format is : REPUBLISH author:@user msg_id:id\\r\\n");
+                        return;
+                    }
+                    if((!messageLines[1].startsWith("author:")) && (!messageLines[2].startsWith("msg_id:"))){
+                        out.println("ERROR\\r\\nBad request format. The good format is : REPUBLISH author:@user msg_id:id\\r\\n");
+                        return;
+                    }
+                    String author = messageLines[1].split(":")[1];
+                    int id = Integer.parseInt(messageLines[2].split(":")[1]);
+                    if (database.messageIdExist(id)) {
+                        String messageToRepublish = database.getMessage(id);
+                        database.executeStatement("INSERT INTO messages (id, author, content, tags, replyTo, republished) VALUES (" + database.setMessageId() + ", '" + author + "', '" + messageToRepublish + "', '" + database.getTags(id) + "', NULL, " + 1 + ")");
+                        out.println("OK\\r\\n\\r\\n");
+                    } else {
+                        out.println("ERROR\\r\\nMessage id not exist\\r\\n");
+                    }
+                }
+                case "REPLY" -> {
+                    if(messageLines.length < 3){
+                        out.println("ERROR\\r\\nBad request format. The good format is : entete : REPLY author:@user reply_to_id:id corps : contenu du message\\r\\n");
+                        return;
+                    }
+                    if((!messageLines[1].startsWith("author:")) && (!messageLines[2].startsWith("reply_to_id:"))){
+                        out.println("ERROR\\r\\nBad request format. The good format is : REPLY author:@user reply_to_id:id\\r\\n");
+                        return;
+                    }
+                    String author = messageLines[1].split(":")[1];
+                    int replyTo = Integer.parseInt(messageLines[2].split(":")[1]);
+                    if(database.messageIdExist(replyTo)) {
+                        int contentMessageSize = (message.length() - (messageLines[0].length() + messageLines[1].length() + messageLines[2].length() + 10));
+                        if (contentMessageSize > MAX_MESSAGE_SIZE) {
+                            out.println("ERROR\\r\\nMessage too long\\r\\n");
+                            return;
+                        }
+                        StringBuilder completeMessage = new StringBuilder();
+                        StringBuilder tags = new StringBuilder();
+                        for (int i = 3; i < messageLines.length; i++) {
+                            completeMessage.append(messageLines[i]).append(" ");
+                            if (messageLines[i].startsWith("#")) {
+                                tags.append(messageLines[i]).append(",");
+                            }
+                        }
+                        database.executeStatement("INSERT INTO messages (id, author, content, tags, replyTo, republished) VALUES (" + database.setMessageId() + ", '" + author + "', '" + completeMessage + "', '" + tags + "', " + replyTo + ", 0)");
+                        out.println("OK\\r\\n\\r\\n");
                     } else {
                         out.println("ERROR\\r\\nMessage id not exist\\r\\n");
                     }
