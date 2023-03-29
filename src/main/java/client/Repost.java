@@ -24,17 +24,10 @@ public class Repost {
                 continue;
             }
             out.println("RCV_IDS author:@" + author);
-            out.close();
             String response = in.readLine();
-            in.close();
             String[] messageLines = response.split("\\\\r\\\\n|,");
             for (int i = 1; i < messageLines.length; i++) {
                 out.println("REPUBLISH author:" + user + " msg_id:" + messageLines[i]);
-                String responseMessage = in.readLine();
-                String[] messageLinesMessage = responseMessage.split("\\\\r\\\\n");
-                System.out.println(messageLinesMessage[0]);
-                out.close();
-                in.close();
             }
         }
     }

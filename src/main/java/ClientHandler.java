@@ -33,6 +33,8 @@ public class ClientHandler implements Runnable {
                     int contentMessageSize = (message.length() - (messageLines[0].length() + messageLines[1].length() + 9));
                     if (contentMessageSize > MAX_MESSAGE_SIZE) {
                         out.println("ERROR\\r\\nMessage too long\\r\\n");
+                        out.close();
+                        in.close();
                         return;
                     }
                     StringBuilder completeMessage = new StringBuilder();
@@ -46,6 +48,8 @@ public class ClientHandler implements Runnable {
                     database.executeStatement("INSERT INTO messages (id, author, content, tags, replyTo, republished) VALUES (" + database.setMessageId() + ", '" + author + "', '" + completeMessage + "', '" + tags + "', NULL, 0)");
                     System.out.println(author + " " + completeMessage);
                     out.println("OK\\r\\n\\r\\n");
+                    out.close();
+                    in.close();
                 }
                 case "RCV_IDS" -> {
                     String user = null;
@@ -67,33 +71,53 @@ public class ClientHandler implements Runnable {
 
                     if (user == null && tag == null && id == -1) {
                         out.println("MSG_IDS\\r\\n" + database.getLastMessageId(n) + "\\r\\n");
+                        out.close();
+                        in.close();
                     }
                     if (user != null && tag == null && id == -1) {
                         out.println("MSG_IDS\\r\\n" + database.getLastMessageOfUser(n, user) + "\\r\\n");
+                        out.close();
+                        in.close();
                     }
                     if (user == null && tag != null && id == -1) {
                         out.println("MSG_IDS\\r\\n" + database.getLastMessageOfTag(n, tag) + "\\r\\n");
+                        out.close();
+                        in.close();
                     }
                     if (user == null && tag == null && id != -1) {
                         out.println("MSG_IDS\\r\\n" + database.getLastMessageIdSince(n, id) + "\\r\\n");
+                        out.close();
+                        in.close();
                     }
                     if (user != null && tag != null && id == -1) {
                         out.println("MSG_IDS\\r\\n" + database.getLastMessageOfUserAndTag(n, user, tag) + "\\r\\n");
+                        out.close();
+                        in.close();
                     }
                     if (user != null && tag == null && id != -1) {
                         out.println("MSG_IDS\\r\\n" + database.getLastMessageOfUserSince(n, user, id) + "\\r\\n");
+                        out.close();
+                        in.close();
                     }
                     if (user == null && tag != null && id != -1) {
                         out.println("MSG_IDS\\r\\n" + database.getLastMessageOfTagSince(n, tag, id) + "\\r\\n");
+                        out.close();
+                        in.close();
                     }
                     if (user != null && tag != null && id != -1) {
                         out.println("MSG_IDS\\r\\n" + database.getLastMessageOfUserAndTagSince(n, user, tag, id) + "\\r\\n");
+                        out.close();
+                        in.close();
                     }
 
+                    out.close();
+                    in.close();
                 }
                 case "RCV_MSG" -> {
                     if (!messageLines[1].split(":")[0].equals("msg_id")) {
                         out.println("ERROR\\r\\nBad request format. The good format is : RCV_MSG msg_id:id\\r\\n");
+                        out.close();
+                        in.close();
                         return;
                     }
                     int messageId = Integer.parseInt(messageLines[1].split(":")[1]);
@@ -106,14 +130,20 @@ public class ClientHandler implements Runnable {
                     } else {
                         out.println("ERROR\\r\\nMessage id not exist\\r\\n");
                     }
+                    out.close();
+                    in.close();
                 }
                 case "REPUBLISH" -> {
                     if(messageLines.length < 3){
                         out.println("ERROR\\r\\nBad request format. The good format is : REPUBLISH author:@user msg_id:id\\r\\n");
+                        out.close();
+                        in.close();
                         return;
                     }
                     if((!messageLines[1].startsWith("author:")) && (!messageLines[2].startsWith("msg_id:"))){
                         out.println("ERROR\\r\\nBad request format. The good format is : REPUBLISH author:@user msg_id:id\\r\\n");
+                        out.close();
+                        in.close();
                         return;
                     }
                     String author = messageLines[1].split(":")[1];
@@ -125,14 +155,20 @@ public class ClientHandler implements Runnable {
                     } else {
                         out.println("ERROR\\r\\nMessage id not exist\\r\\n");
                     }
+                    out.close();
+                    in.close();
                 }
                 case "REPLY" -> {
                     if(messageLines.length < 3){
                         out.println("ERROR\\r\\nBad request format. The good format is : entete : REPLY author:@user reply_to_id:id corps : contenu du message\\r\\n");
+                        out.close();
+                        in.close();
                         return;
                     }
                     if((!messageLines[1].startsWith("author:")) && (!messageLines[2].startsWith("reply_to_id:"))){
                         out.println("ERROR\\r\\nBad request format. The good format is : REPLY author:@user reply_to_id:id\\r\\n");
+                        out.close();
+                        in.close();
                         return;
                     }
                     String author = messageLines[1].split(":")[1];
@@ -141,6 +177,8 @@ public class ClientHandler implements Runnable {
                         int contentMessageSize = (message.length() - (messageLines[0].length() + messageLines[1].length() + messageLines[2].length() + 10));
                         if (contentMessageSize > MAX_MESSAGE_SIZE) {
                             out.println("ERROR\\r\\nMessage too long\\r\\n");
+                            out.close();
+                            in.close();
                             return;
                         }
                         StringBuilder completeMessage = new StringBuilder();
@@ -156,9 +194,13 @@ public class ClientHandler implements Runnable {
                     } else {
                         out.println("ERROR\\r\\nMessage id not exist\\r\\n");
                     }
+                    out.close();
+                    in.close();
                 }
                 default -> {
                     out.println("ERROR\\r\\nUnknown command\\r\\n");
+                    out.close();
+                    in.close();
                 }
             }
 
