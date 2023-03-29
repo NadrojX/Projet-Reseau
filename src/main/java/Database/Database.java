@@ -160,7 +160,7 @@ public class Database {
         PreparedStatement statement = connection.prepareStatement(query);
         statement.setString(1, author);
         ResultSet resultSet = statement.executeQuery();
-        resultSet.next(); // Move to the first row of the result set
+        resultSet.next();
         return resultSet.getInt(1);
     }
 
