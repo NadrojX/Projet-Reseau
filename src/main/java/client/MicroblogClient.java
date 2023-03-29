@@ -7,7 +7,7 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Scanner;
 
-public class ClientDebug {
+public class MicroblogClient {
 
     public static void main(String[] args) throws IOException {
         Socket socket = new Socket("localhost", 12345);
@@ -21,7 +21,12 @@ public class ClientDebug {
             out.println(message);
 
             String response = in.readLine();
+            String[] messageLines = response.split("\\\\r\\\\n| ");
+            String command = messageLines[0];
+
             System.out.println(response);
         }
     }
+
+
 }

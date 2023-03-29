@@ -122,7 +122,6 @@ public class Database {
         return stringBuilder.toString();
     }
 
-
     public String getLastMessageOfUserSince(int n, String user, long id) throws SQLException {
         ResultSet resultSet = statement.executeQuery("SELECT id FROM messages WHERE author = '" + user + "' AND id > " + id + " ORDER BY id DESC LIMIT " + n);
         StringBuilder stringBuilder = new StringBuilder();
