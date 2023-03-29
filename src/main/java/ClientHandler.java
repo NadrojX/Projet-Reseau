@@ -157,7 +157,9 @@ public class ClientHandler implements Runnable {
                         out.println("ERROR\\r\\nMessage id not exist\\r\\n");
                     }
                 }
-                default -> out.println("ERROR\\r\\nUnknown command\\r\\n");
+                default -> {
+                    out.println("ERROR\\r\\nUnknown command\\r\\n");
+                }
             }
 
         } catch (IOException | SQLException e) {

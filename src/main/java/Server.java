@@ -9,7 +9,7 @@ import java.util.concurrent.Executors;
 public class Server {
 
     public static void main(String[] args) throws IOException {
-        ExecutorService executorService = Executors.newFixedThreadPool(5);
+        ExecutorService executorService = Executors.newWorkStealingPool();
         ServerSocket serverSocket = new ServerSocket(12345);
         Database database = new Database("src/main/resources/database.db");
         database.connect();
