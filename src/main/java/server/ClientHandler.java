@@ -1,3 +1,5 @@
+package server;
+
 import Database.Database;
 
 import java.io.BufferedReader;

@@ -155,4 +155,14 @@ public class Database {
         return resultSet.getString("tags");
     }
 
+    public int getNumberOfMessageOfAuthor(String author) throws SQLException {
+        String query = "SELECT COUNT(*) FROM messages WHERE author = ?";
+        PreparedStatement statement = connection.prepareStatement(query);
+        statement.setString(1, author);
+        ResultSet resultSet = statement.executeQuery();
+        resultSet.next(); // Move to the first row of the result set
+        return resultSet.getInt(1);
+    }
+
+
 }
