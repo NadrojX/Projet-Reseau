@@ -23,6 +23,7 @@ public class Publisher {
         PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
         BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
+        System.out.print("\nwrite your message: ");
         String message = scanner.nextLine();
         out.println("PUBLISH " + pseudo + "\\r\\n" + message + "\\r\\n");
 

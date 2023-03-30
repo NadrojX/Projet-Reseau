@@ -34,6 +34,7 @@ public class Repost {
             String response = in.readLine();
             String[] messageLines = response.split("\\\\r\\\\n|,");
             for (int i = 1; i < messageLines.length; i++) {
+                System.out.println("REPUBLISH author:" + user + " msg_id:" + messageLines[i]);
                 out.println("REPUBLISH author:" + user + " msg_id:" + messageLines[i]);
             }
         }
